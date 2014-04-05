@@ -22,13 +22,14 @@ Room = function($room) {
 Room.prototype = {
 	parseRoomOutput: function(roomData) {
 		// console.log(roomData);
-		var dataRows = roomData.split('&');
+		var dataRows = roomData.split(/^&|:\n&|\n$/g);
 		dataRows.shift();
+		dataRows.pop();
 		for (var i = 0; i < dataRows.length;i++) {
 			try {
 				var keyValue = dataRows[i].split('='),
 						k = keyValue[0],
-						v = keyValue[1].replace(/\s+$/g, '');
+						v = keyValue[1]; //.replace(/\s+$/g, '');
 				// console.log('k = "' + k + '" -- v = "' + v + '"');
 				if (v !== deadStatus &&
 						k.substring(0,13) === 'machineStatus') {
@@ -46,6 +47,7 @@ Room.prototype = {
 					}
 				}
 			} catch (err) {
+				console.log(roomData);
 				console.log(dataRows);
 				console.log("Error parsing the room: " + err);				
 			}
