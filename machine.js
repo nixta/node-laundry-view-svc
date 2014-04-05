@@ -27,7 +27,7 @@ function parseStatus(machine, encodedStatus) {
 	}
 	
 	if (machine.status === inUse) {
-		machine.minutesLeft = statusParts[minutesLeft];
+		machine.minutesLeft = parseInt(statusParts[minutesLeft]);
 	}
 
 	if (statusParts[statusNote] != 0) {
