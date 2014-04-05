@@ -1,0 +1,11 @@
+{
+  "name": "laundryView-server",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "~3.5.1",
+    "request": "~2.34.0",
+    "cheerio": "~0.14.0",
+    "cookie": "~0.1.1",
+    "date-utils": "~1.2.15"
+  }
+}
