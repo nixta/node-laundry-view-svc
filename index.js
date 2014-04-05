@@ -1,6 +1,6 @@
 var express = require('express'),
 		rooms = require('./rooms'),
-		room = require('./room');
+		path = require('path');
 
 var app = express();
 
