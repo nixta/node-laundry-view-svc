@@ -15,9 +15,9 @@ function loadRoomCache() {
 };
 
 app.configure(function() {
-	app.use(app.router);
-
 	loadRoomCache();
+	app.use(app.router);
+	app.use(express.static(path.join(__dirname,"resources"), {maxAge: 31557600000}));
 });
 
 app.get('/rooms', function(req, res) {
