@@ -8,7 +8,7 @@ var roomDynamicStatusUrl = 'http://www.laundryview.com/dynamicRoomData.php?locat
 		roomApplianceStatusUrl = 'http://www.laundryview.com/appliance_status_ajax.php?lr=%s';
 
 var roomIdPrefix = 'laundry_room.php?lr=',
-		deadStatus = '1:0:0:0:0:0:';
+		deadStatus = '1:0:0:0:0:0';
 
 Room = function($room) {
 	this.name = $room.text().trim();
@@ -21,19 +21,20 @@ Room = function($room) {
 
 Room.prototype = {
 	parseRoomOutput: function(roomData) {
-		// console.log(roomData);
-		var dataRows = roomData.split(/^&|:\n&|\n$/g);
+		// console.log(">>" + roomData + "<<");
+		var dataRows = roomData.split(/^&|:\n&|:\n$/g);
 		dataRows.shift();
 		dataRows.pop();
+		var machineId = 1;
 		for (var i = 0; i < dataRows.length;i++) {
 			try {
 				var keyValue = dataRows[i].split('='),
 						k = keyValue[0],
-						v = keyValue[1]; //.replace(/\s+$/g, '');
-				// console.log('k = "' + k + '" -- v = "' + v + '"');
+						v = keyValue[1];
+				 // console.log('"' + k + '" = "' + v + '"');
 				if (v !== deadStatus &&
 						k.substring(0,13) === 'machineStatus') {
-					k = k.substring(13);
+					k = machineId++;
 					var vs = v.split('\n');
 
 					if (vs.length === 1) {
@@ -42,7 +43,8 @@ Room.prototype = {
 					} else {
 						var d = new machine.Machine(k,vs[0]);
 						this.dryers.push(d);
-						d = new machine.Machine(k+'a',vs[1]);
+						k = machineId++;
+						d = new machine.Machine(k,vs[1]);
 						this.dryers.push(d);
 					}
 				}
