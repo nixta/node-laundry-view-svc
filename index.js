@@ -1,5 +1,5 @@
 var express = require('express'),
-    rooms = require('./rooms'),
+    campus = require('./campus'),
     path = require('path');
 
 var app = express();
@@ -7,8 +7,8 @@ var app = express();
 var roomCache = {};
 
 function loadRoomCache() {
-  var allRooms = new rooms.Rooms();
-  allRooms.loadRooms(function(rooms) {
+  var c = new campus.Campus();
+  c.loadRooms(function(rooms) {
     console.log('Rooms loaded into app');
     roomCache = rooms;
   });
@@ -37,9 +37,13 @@ app.get('/room/:roomId', function(req, res) {
   if (roomIsValid) {
     res.send(room);
   } else {
-    room.loadRoom(function(room) {
-      roomCache[room.roomId] = room;
-      res.send(room);
+    room.loadRoom(function(error, room) {
+    	if (error) {
+    		res.send(error);
+    	} else {
+	      roomCache[room.roomId] = room;
+	      res.send(room);
+    	}
     });
   }
 });
