@@ -27,6 +27,7 @@ app.get('/rooms', function(req, res) {
 app.get('/room/:roomId', function(req, res) {
   var room = roomCache[req.params.roomId],
       roomIsValid = false;
+
   if (room !== undefined) {
     var cacheRefreshDue = new Date(room.nextRefreshDue);
     if (cacheRefreshDue > new Date()) {
