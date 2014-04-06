@@ -4,13 +4,53 @@ var express = require('express'),
 
 var app = express();
 
-var roomCache = {};
+var roomCache = {},
+    serviceInitialized = false;
+
+function setUpRoutes() {
+  app.get('/rooms', function(req, res) {
+    res.send(roomCache);
+  });
+
+  app.get('/room/:roomId', function(req, res) {
+    var room = roomCache[req.params.roomId],
+      roomIsValid = false;
+
+    if (room !== undefined) {
+      var cacheRefreshDue = new Date(room.nextRefreshDue);
+      if (cacheRefreshDue > new Date()) {
+        roomIsValid = true;
+      }
+    } else {
+      res.send(404, "Room " + roomId + " does not exist");
+    }
+
+    if (roomIsValid) {
+      res.send(room);
+    } else {
+      room.loadRoom(function(error, room) {
+        if (error) {
+          res.send(500, {
+            error: error
+          });
+        } else {
+          roomCache[room.roomId] = room;
+          res.send(room);
+        }
+      });
+    }
+  });
+
+  console.log("Initialized routes");
+}
 
 function loadRoomCache() {
   var c = new campus.Campus();
   c.loadRooms(function(rooms) {
-    console.log('Rooms loaded into app');
+    console.log(Object.keys(rooms).length + ' Rooms loaded into app');
     roomCache = rooms;
+    serviceInitialized = true;
+    setUpRoutes();
   });
 };
 
@@ -18,35 +58,6 @@ app.configure(function() {
   loadRoomCache();
   app.use(app.router);
   app.use(express.static(path.join(__dirname, "resources"), {maxAge: 31557600000}));
-});
-
-app.get('/rooms', function(req, res) {
-  res.send(roomCache);
-});
-
-app.get('/room/:roomId', function(req, res) {
-  var room = roomCache[req.params.roomId],
-      roomIsValid = false;
-
-  if (room !== undefined) {
-    var cacheRefreshDue = new Date(room.nextRefreshDue);
-    if (cacheRefreshDue > new Date()) {
-      roomIsValid = true;
-    }
-  }
-
-  if (roomIsValid) {
-    res.send(room);
-  } else {
-    room.loadRoom(function(error, room) {
-    	if (error) {
-    		res.send(error);
-    	} else {
-	      roomCache[room.roomId] = room;
-	      res.send(room);
-    	}
-    });
-  }
 });
 
 var port = process.env.PORT || process.env.VCAP_APP_PORT || 1337;

@@ -28,7 +28,6 @@ Campus.prototype = {
   	self = this;
   	this.refreshSession(function(error, response, body) {
       if (!error && response.statusCode == 200) {
-        console.log('Got rooms');
         self.rooms = parseRooms(self, body);
         callback(self.rooms);
       }
