@@ -12,6 +12,7 @@ var roomIdPrefix = 'laundry_room.php?lr=',
 
 Room = function(campus, $room) {
   this.campus = campus;
+  this.campusName = campus.name;
   this.name = $room.text().trim();
   this.roomId = $room.attr('href').replace(roomIdPrefix, '');
   this.washers = {};

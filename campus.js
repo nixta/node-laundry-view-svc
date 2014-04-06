@@ -3,7 +3,7 @@ var request = require('request'),
     cookie = require('cookie'),
     r = require('./room');
 
-var roomListHtmlUrl = 'http://www.laundryview.com/lvs.php?s=219';
+var roomListHtmlUrlTemplate = 'http://www.laundryview.com/lvs.php?s=';
 
 var phpSessionCookieName = 'PHPSESSID';
 
@@ -17,7 +17,9 @@ function parseRooms(campus, htmlBody) {
   return result;
 };
 
-Campus = function() {
+Campus = function(sessionKey, campusName) {
+	this.roomsUrl = roomListHtmlUrlTemplate + sessionKey;
+	this.name = campusName;
   this.rooms = [];
   this.PHPSESSID = '';
   this.jar = request.jar();
@@ -25,17 +27,18 @@ Campus = function() {
 
 Campus.prototype = {
   loadRooms: function(callback) {
-  	self = this;
   	this.refreshSession(function(error, response, body) {
       if (!error && response.statusCode == 200) {
-        self.rooms = parseRooms(self, body);
-        callback(self.rooms);
+        this.rooms = parseRooms(this, body);
+        console.log('Loaded ' + Object.keys(this.rooms).length + ' rooms for ' + this.name);
+        return callback(null, this.rooms);
+      } else {
+      	return callback(error, null);
       }
-    }, false);
+    }.bind(this), false);
   },
 
   refreshSession: function(callback, forceRefresh) {
-    self = this;
     forceRefresh = forceRefresh!==undefined && forceRefresh;
     if (forceRefresh) {
     	// New cookie jar = new session ID
@@ -43,7 +46,7 @@ Campus.prototype = {
     }
 
     var opts = {
-      url: roomListHtmlUrl,
+      url: this.roomsUrl,
       jar: this.jar
     };
 
@@ -54,8 +57,8 @@ Campus.prototype = {
 	      	try {
 	          var cookies = cookie.parse(response.headers['set-cookie'][0]);
 		        if (cookies.hasOwnProperty(phpSessionCookieName)) {
-			        self.PHPSESSID = cookies[phpSessionCookieName];
-		        	console.log('New PHPSESSID cookie: ' + self.PHPSESSID);
+			        this.PHPSESSID = cookies[phpSessionCookieName];
+		        	console.log('New PHPSESSID cookie: ' + this.PHPSESSID);
 		        }
 		    	} catch (err) {
 						console.log("Error reading updated cookie: " + err);
@@ -63,7 +66,7 @@ Campus.prototype = {
 	      }
       }
       callback(error, response, body);
-    });
+    }.bind(this));
   }
 };
 

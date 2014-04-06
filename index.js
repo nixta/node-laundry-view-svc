@@ -1,11 +1,21 @@
 var express = require('express'),
     campus = require('./campus'),
-    path = require('path');
+    path = require('path'),
+    async = require('async');
 
 var app = express();
 
 var roomCache = {},
-    serviceInitialized = false;
+    campusConfigs = {
+      216: {
+        id:'pcv',
+        name:'Peter Cooper Village'
+      },
+      219: {
+        id:'st',
+        name:'Stuyvesant Town'
+      }
+    };
 
 function setUpRoutes() {
   app.get('/rooms', function(req, res) {
@@ -45,12 +55,28 @@ function setUpRoutes() {
 }
 
 function loadRoomCache() {
-  var c = new campus.Campus();
-  c.loadRooms(function(rooms) {
-    console.log(Object.keys(rooms).length + ' Rooms loaded into app');
-    roomCache = rooms;
-    serviceInitialized = true;
-    setUpRoutes();
+  var loadFunctions = {};
+
+  for (var campusId in campusConfigs) {
+    var campusConfig = campusConfigs[campusId];
+    var c = new campus.Campus(campusId, campusConfig.name);
+    campusConfig['campus'] = c;
+    loadFunctions[campusId] = c.loadRooms.bind(c);
+  }
+
+  async.parallel(loadFunctions, function(err, results) {
+    if (err) {
+      console.log("Error getting rooms lists: ", err);
+    } else {
+      for (var campusId in results) {
+        var campusRooms = results[campusId];
+        for (var roomId in campusRooms) {
+          roomCache[roomId] = campusRooms[roomId];
+        }
+      }
+      console.log('Loaded ' + Object.keys(roomCache).length + ' rooms across ' + Object.keys(results).length + ' campuses');
+      setUpRoutes();
+    }
   });
 };
 
