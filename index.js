@@ -9,7 +9,7 @@ var roomCache = {},
 
 function setUpRoutes() {
   app.get('/rooms', function(req, res) {
-    res.send(roomCache);
+    return res.send(roomCache);
   });
 
   app.get('/room/:roomId', function(req, res) {
@@ -22,7 +22,7 @@ function setUpRoutes() {
         roomIsValid = true;
       }
     } else {
-      res.send(404, "Room " + roomId + " does not exist");
+      return res.send(404, "Room " + req.params.roomId + " does not exist");
     }
 
     if (roomIsValid) {
@@ -30,12 +30,12 @@ function setUpRoutes() {
     } else {
       room.loadRoom(function(error, room) {
         if (error) {
-          res.send(500, {
+          return res.send(500, {
             error: error
           });
         } else {
           roomCache[room.roomId] = room;
-          res.send(room);
+          return res.send(room);
         }
       });
     }
