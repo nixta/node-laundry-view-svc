@@ -84,8 +84,9 @@ $(function() {
     });
   }
 
-  function roomSelected(evt, params) {
-    selectRoom(params.selected);
+  function roomSelected(evt) {
+    var roomId = picker.children('option:selected').val();
+    selectRoom(roomId);
   }
 
   function setRoomsList() {
@@ -109,7 +110,8 @@ $(function() {
       };
     }
 
-    picker.chosen({width: "100%"}).change(roomSelected);
+    picker.chosen({width: "100%"});
+    picker.on('change', roomSelected);
   }
 
   $.get(roomsUrl, function(data, status, jqXHR) {
