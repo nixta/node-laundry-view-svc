@@ -87,6 +87,7 @@ $(function() {
   function roomSelected(evt) {
     var roomId = picker.children('option:selected').val();
     selectRoom(roomId);
+    picker.blur();
   }
 
   function setRoomsList() {
