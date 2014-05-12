@@ -30,7 +30,29 @@ $(function() {
 
     for (var campusName in parsedRooms) {
       parsedRooms[campusName] = parsedRooms[campusName].sort(function(a,b) {
-        return a.name<b.name?-1:(a.name>b.name?1:0);
+        var aInfo = a.name.split(/ (.+)/).reverse(),
+            bInfo = b.name.split(/ (.+)/).reverse();
+        aInfo.shift();
+        bInfo.shift();
+        var aName = aInfo[0],
+            bName = bInfo[0];
+
+        if (aName === bName) {
+          var aNum = aInfo[1],
+              bNum = bInfo[1];
+          if (aNum.indexOf('/') > -1) {
+            aNum = aNum.split('/')[0];
+          }
+          aNum = parseInt(aNum);
+          if (bNum.indexOf('/') > -1) {
+            bNum = bNum.split('/')[0];
+          }
+          bNum = parseInt(bNum)
+
+          return aNum<bNum?-1:(aNum>bNum?1:0);
+        }
+
+        return aName<bName?-1:(aName>bName?1:0);
       });
     }
 
@@ -72,8 +94,18 @@ $(function() {
             return washer.status === "available";
           });
 
-      $('#roomDetails #washers .panel-body').text(washersAvailable.length + '/' + washers.length + ' available');
-      $('#roomDetails #dryers .panel-body').text(dryersAvailable.length + '/' + dryers.length + ' available');
+      var wText = washersAvailable.length + '/' + washers.length + ' available',
+          dText = dryersAvailable.length + '/' + dryers.length + ' available';
+
+      if (washers.length > washersAvailable.length + washersInUse.length) {
+        wText += ' (' + (washers.length - washersAvailable.length - washersInUse.length) + ' out of order)';
+      }
+      if (dryers.length > dryersAvailable.length + dryersInUse.length) {
+        dText += ' (' + (dryers.length - dryersAvailable.length - dryersInUse.length) + ' out of order)';
+      }
+
+      $('#roomDetails #washers .panel-body').text(wText);
+      $('#roomDetails #dryers .panel-body').text(dText);
 
       var chartOptions = {animateRotate: false, animateScale: true, animationSteps: 25};
 
