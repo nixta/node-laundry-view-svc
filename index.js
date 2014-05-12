@@ -83,7 +83,7 @@ function loadRoomCache() {
 app.configure(function() {
   loadRoomCache();
   app.use(app.router);
-  app.use(express.static(path.join(__dirname, "resources"), {maxAge: 31557600000}));
+  app.use(express.static(path.join(__dirname, "web"), {maxAge: 31557600000}));
 });
 
 var port = process.env.PORT || process.env.VCAP_APP_PORT || 1337;
